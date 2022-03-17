@@ -43,8 +43,11 @@ import org.matrix.android.sdk.internal.session.room.alias.DefaultGetRoomLocalAli
 import org.matrix.android.sdk.internal.session.room.alias.DeleteRoomAliasTask
 import org.matrix.android.sdk.internal.session.room.alias.GetRoomIdByAliasTask
 import org.matrix.android.sdk.internal.session.room.alias.GetRoomLocalAliasesTask
+import org.matrix.android.sdk.internal.session.room.create.CreateLocalRoomTask
 import org.matrix.android.sdk.internal.session.room.create.CreateRoomTask
+import org.matrix.android.sdk.internal.session.room.create.Default
 import org.matrix.android.sdk.internal.session.room.create.DefaultCreateRoomTask
+import org.matrix.android.sdk.internal.session.room.create.Local
 import org.matrix.android.sdk.internal.session.room.directory.DefaultGetPublicRoomTask
 import org.matrix.android.sdk.internal.session.room.directory.DefaultGetRoomDirectoryVisibilityTask
 import org.matrix.android.sdk.internal.session.room.directory.DefaultSetRoomDirectoryVisibilityTask
@@ -190,7 +193,12 @@ internal abstract class RoomModule {
     abstract fun bindFileService(service: DefaultFileService): FileService
 
     @Binds
+    @Default
     abstract fun bindCreateRoomTask(task: DefaultCreateRoomTask): CreateRoomTask
+
+    @Binds
+    @Local
+    abstract fun bindCreateLocalRoomTask(task: CreateLocalRoomTask): CreateRoomTask
 
     @Binds
     abstract fun bindGetPublicRoomTask(task: DefaultGetPublicRoomTask): GetPublicRoomTask

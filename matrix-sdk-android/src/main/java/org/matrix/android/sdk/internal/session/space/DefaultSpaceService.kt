@@ -51,6 +51,7 @@ import org.matrix.android.sdk.internal.di.UserId
 import org.matrix.android.sdk.internal.session.room.RoomGetter
 import org.matrix.android.sdk.internal.session.room.SpaceGetter
 import org.matrix.android.sdk.internal.session.room.create.CreateRoomTask
+import org.matrix.android.sdk.internal.session.room.create.Default
 import org.matrix.android.sdk.internal.session.room.membership.leaving.LeaveRoomTask
 import org.matrix.android.sdk.internal.session.room.state.StateEventDataSource
 import org.matrix.android.sdk.internal.session.room.summary.RoomSummaryDataSource
@@ -59,7 +60,7 @@ import javax.inject.Inject
 
 internal class DefaultSpaceService @Inject constructor(
         @UserId private val userId: String,
-        private val createRoomTask: CreateRoomTask,
+        @Default private val createRoomTask: CreateRoomTask,
         private val joinSpaceTask: JoinSpaceTask,
         private val spaceGetter: SpaceGetter,
         private val roomGetter: RoomGetter,
