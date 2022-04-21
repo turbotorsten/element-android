@@ -956,6 +956,7 @@ internal class DefaultCryptoService @Inject constructor(
         if (!event.isStateEvent()) return
         val eventContent = event.content.toModel<RoomHistoryVisibilityContent>()
         eventContent?.historyVisibility?.let {
+            Timber.i("-----> onRoomHistoryVisibilityEvent $it")
             cryptoStore.setShouldEncryptForInvitedMembers(roomId, it != RoomHistoryVisibility.JOINED)
         }
     }
