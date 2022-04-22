@@ -349,7 +349,7 @@ class VectorCallViewModel @AssistedInject constructor(
                 handleToggleScreenSharing(state.isSharingScreen)
             }
             is VectorCallViewActions.StartScreenSharing          -> {
-                call?.startSharingScreen()
+                call?.startSharingScreen(action.videoCapturer)
                 setState {
                     copy(isSharingScreen = true)
                 }
