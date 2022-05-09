@@ -157,9 +157,10 @@ class VectorCallViewModel @AssistedInject constructor(
             }
         }
 
-        override fun onAudioDevicesChange() {
-            val currentSoundDevice = callManager.audioManager.selectedDevice ?: return
-            if (currentSoundDevice == CallAudioManager.Device.Phone) {
+        override fun onAudioDevicesChange() = withState { state ->
+            val currentSoundDevice = callManager.audioManager.selectedDevice ?: return@withState
+            val webRtcCall = callManager.getCallById(state.callId)
+            if (webRtcCall != null && shouldActivateProximitySensor(webRtcCall)) {
                 proximityManager.start()
             } else {
                 proximityManager.stop()
@@ -206,7 +207,7 @@ class VectorCallViewModel @AssistedInject constructor(
             callManager.addListener(callManagerListener)
             webRtcCall.addListener(callListener)
             val currentSoundDevice = callManager.audioManager.selectedDevice
-            if (currentSoundDevice == CallAudioManager.Device.Phone) {
+            if (shouldActivateProximitySensor(webRtcCall)) {
                 proximityManager.start()
             }
             setState {
@@ -231,6 +232,10 @@ class VectorCallViewModel @AssistedInject constructor(
             }
             updateOtherKnownCall(webRtcCall)
         }
+    }
+
+    private fun shouldActivateProximitySensor(webRtcCall: WebRtcCall): Boolean {
+        return callManager.audioManager.selectedDevice == CallAudioManager.Device.Phone && !webRtcCall.isSharingScreen()
     }
 
     private fun WebRtcCall.extractCallInfo(): VectorCallViewState.CallInfo {
@@ -352,6 +357,7 @@ class VectorCallViewModel @AssistedInject constructor(
             }
             is VectorCallViewActions.StartScreenSharing          -> {
                 call?.startSharingScreen(action.videoCapturer)
+                proximityManager.stop()
                 setState {
                     copy(isSharingScreen = true)
                 }
@@ -368,6 +374,9 @@ class VectorCallViewModel @AssistedInject constructor(
             _viewEvents.post(
                     VectorCallViewEvents.StopScreenSharingService
             )
+            if (callManager.audioManager.selectedDevice == CallAudioManager.Device.Phone) {
+                proximityManager.start()
+            }
         } else {
             _viewEvents.post(
                     VectorCallViewEvents.ShowScreenSharingPermissionDialog
