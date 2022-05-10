@@ -166,9 +166,7 @@ class LoginViewModel @AssistedInject constructor(
             is LoginAction.LoginOrRegister  ->
                 handleDirectLogin(
                         finalLastAction,
-                        HomeServerConnectionConfig.Builder()
-                                // Will be replaced by the task
-                                .withHomeServerUri("https://dummy.org")
+                        HomeServerConnectionConfig.Builder.from(finalLastAction.username)
                                 .withAllowedFingerPrints(listOf(action.fingerprint))
                                 .build()
                 )
@@ -554,11 +552,11 @@ class LoginViewModel @AssistedInject constructor(
             SignMode.Unknown            -> error("Developer error, invalid sign mode")
             SignMode.SignIn             -> handleLogin(action)
             SignMode.SignUp             -> handleRegisterWith(action)
-            SignMode.SignInWithMatrixId -> handleDirectLogin(action, null)
+            SignMode.SignInWithMatrixId -> handleDirectLogin(action, HomeServerConnectionConfig.Builder.from(action.username).build())
         }
     }
 
-    private fun handleDirectLogin(action: LoginAction.LoginOrRegister, homeServerConnectionConfig: HomeServerConnectionConfig?) {
+    private fun handleDirectLogin(action: LoginAction.LoginOrRegister, homeServerConnectionConfig: HomeServerConnectionConfig) {
         setState {
             copy(
                     asyncLoginAction = Loading()
@@ -567,7 +565,7 @@ class LoginViewModel @AssistedInject constructor(
 
         currentJob = viewModelScope.launch {
             val data = try {
-                authenticationService.getWellKnownData(action.username, homeServerConnectionConfig)
+                authenticationService.getWellKnownData(homeServerConnectionConfig)
             } catch (failure: Throwable) {
                 onDirectLoginError(failure)
                 return@launch

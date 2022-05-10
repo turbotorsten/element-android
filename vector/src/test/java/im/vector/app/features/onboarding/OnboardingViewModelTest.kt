@@ -144,7 +144,7 @@ class OnboardingViewModelTest {
     @Test
     fun `given has sign in with matrix id sign mode, when handling login or register action, then logs in directly`() = runTest {
         viewModelWith(initialState.copy(signMode = SignMode.SignInWithMatrixId))
-        fakeDirectLoginUseCase.givenSuccessResult(A_LOGIN_OR_REGISTER_ACTION, config = null, result = fakeSession)
+        fakeDirectLoginUseCase.givenSuccessResult(A_LOGIN_OR_REGISTER_ACTION, config = A_HOMESERVER_CONFIG, result = fakeSession)
         givenInitialisesSession(fakeSession)
         val test = viewModel.test()
 
@@ -163,7 +163,7 @@ class OnboardingViewModelTest {
     @Test
     fun `given has sign in with matrix id sign mode, when handling login or register action fails, then emits error`() = runTest {
         viewModelWith(initialState.copy(signMode = SignMode.SignInWithMatrixId))
-        fakeDirectLoginUseCase.givenFailureResult(A_LOGIN_OR_REGISTER_ACTION, config = null, cause = AN_ERROR)
+        fakeDirectLoginUseCase.givenFailureResult(A_LOGIN_OR_REGISTER_ACTION, config = A_HOMESERVER_CONFIG, cause = AN_ERROR)
         givenInitialisesSession(fakeSession)
         val test = viewModel.test()
 

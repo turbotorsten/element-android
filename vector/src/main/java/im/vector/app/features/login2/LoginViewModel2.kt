@@ -497,7 +497,7 @@ class LoginViewModel2 @AssistedInject constructor(
 
         when (state.signMode) {
             SignMode2.Unknown -> error("Developer error, invalid sign mode")
-            SignMode2.SignIn  -> handleSetUserNameForSignIn(action, null)
+            SignMode2.SignIn  -> handleSetUserNameForSignIn(action, HomeServerConnectionConfig.Builder.from(action.username).build())
             SignMode2.SignUp  -> handleSetUserNameForSignUp(action)
         }
     }
@@ -564,12 +564,12 @@ class LoginViewModel2 @AssistedInject constructor(
     /**
      * Perform wellknown request
      */
-    private fun handleSetUserNameForSignIn(action: LoginAction2.SetUserName, homeServerConnectionConfig: HomeServerConnectionConfig?) {
+    private fun handleSetUserNameForSignIn(action: LoginAction2.SetUserName, homeServerConnectionConfig: HomeServerConnectionConfig) {
         setState { copy(isLoading = true) }
 
         currentJob = viewModelScope.launch {
             val data = try {
-                authenticationService.getWellKnownData(action.username, homeServerConnectionConfig)
+                authenticationService.getWellKnownData(homeServerConnectionConfig)
             } catch (failure: Throwable) {
                 onDirectLoginError(failure)
                 return@launch

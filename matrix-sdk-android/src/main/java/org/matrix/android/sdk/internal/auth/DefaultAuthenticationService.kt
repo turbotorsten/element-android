@@ -19,8 +19,6 @@ package org.matrix.android.sdk.internal.auth
 import android.net.Uri
 import dagger.Lazy
 import okhttp3.OkHttpClient
-import org.matrix.android.sdk.api.MatrixPatterns
-import org.matrix.android.sdk.api.MatrixPatterns.getDomain
 import org.matrix.android.sdk.api.auth.AuthenticationService
 import org.matrix.android.sdk.api.auth.data.Credentials
 import org.matrix.android.sdk.api.auth.data.HomeServerConnectionConfig
@@ -30,7 +28,6 @@ import org.matrix.android.sdk.api.auth.login.LoginWizard
 import org.matrix.android.sdk.api.auth.registration.RegistrationWizard
 import org.matrix.android.sdk.api.auth.wellknown.WellknownResult
 import org.matrix.android.sdk.api.failure.Failure
-import org.matrix.android.sdk.api.failure.MatrixIdFailure
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.util.appendParamToUrl
 import org.matrix.android.sdk.internal.SessionManager
@@ -373,24 +370,14 @@ internal class DefaultAuthenticationService @Inject constructor(
         return sessionCreator.createSession(credentials, homeServerConnectionConfig)
     }
 
-    override suspend fun getWellKnownData(matrixId: String,
-                                          homeServerConnectionConfig: HomeServerConnectionConfig?): WellknownResult {
-        if (!MatrixPatterns.isUserId(matrixId)) {
-            throw MatrixIdFailure.InvalidMatrixId
-        }
-
+    override suspend fun getWellKnownData(homeServerConnectionConfig: HomeServerConnectionConfig): WellknownResult {
         return getWellknownTask.execute(
                 GetWellknownTask.Params(
-                        domain = matrixId.getDomain(),
-                        homeServerConnectionConfig = homeServerConnectionConfig.orWellKnownDefaults()
+                        domain = homeServerConnectionConfig.homeServerUri.toString(),
+                        homeServerConnectionConfig = homeServerConnectionConfig
                 )
         )
     }
-
-    private fun HomeServerConnectionConfig?.orWellKnownDefaults() = this ?: HomeServerConnectionConfig.Builder()
-            // server uri is ignored when doing a wellknown lookup as we use the matrix id domain instead
-            .withHomeServerUri("https://dummy.org")
-            .build()
 
     override suspend fun directAuthentication(homeServerConnectionConfig: HomeServerConnectionConfig,
                                               matrixId: String,

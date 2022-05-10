@@ -21,7 +21,10 @@ import com.squareup.moshi.JsonClass
 import okhttp3.CipherSuite
 import okhttp3.ConnectionSpec
 import okhttp3.TlsVersion
+import org.matrix.android.sdk.api.MatrixPatterns
+import org.matrix.android.sdk.api.MatrixPatterns.getDomain
 import org.matrix.android.sdk.api.auth.data.HomeServerConnectionConfig.Builder
+import org.matrix.android.sdk.api.failure.MatrixIdFailure
 import org.matrix.android.sdk.api.network.ssl.Fingerprint
 import org.matrix.android.sdk.internal.util.ensureTrailingSlash
 
@@ -243,6 +246,15 @@ data class HomeServerConnectionConfig(
                     allowHttpExtension = allowHttpExtension,
                     forceUsageTlsVersions = forceUsageTlsVersions
             )
+        }
+
+        companion object {
+            fun from(matrixId: String): Builder {
+                if (!MatrixPatterns.isUserId(matrixId)) {
+                    throw MatrixIdFailure.InvalidMatrixId
+                }
+                return Builder().withHomeServerUri(matrixId.getDomain())
+            }
         }
     }
 }

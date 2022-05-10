@@ -215,9 +215,7 @@ class OnboardingViewModel @AssistedInject constructor(
             is OnboardingAction.LoginOrRegister                   ->
                 handleDirectLogin(
                         finalLastAction,
-                        HomeServerConnectionConfig.Builder()
-                                // Will be replaced by the task
-                                .withHomeServerUri("https://dummy.org")
+                        HomeServerConnectionConfig.Builder.from(matrixId = finalLastAction.username)
                                 .withAllowedFingerPrints(listOf(action.fingerprint))
                                 .build()
                 )
@@ -471,11 +469,11 @@ class OnboardingViewModel @AssistedInject constructor(
             SignMode.Unknown            -> error("Developer error, invalid sign mode")
             SignMode.SignIn             -> handleLogin(action)
             SignMode.SignUp             -> handleRegisterWith(OnboardingAction.Register(action.username, action.password, action.initialDeviceName))
-            SignMode.SignInWithMatrixId -> handleDirectLogin(action, null)
+            SignMode.SignInWithMatrixId -> handleDirectLogin(action, HomeServerConnectionConfig.Builder.from(action.username).build())
         }
     }
 
-    private fun handleDirectLogin(action: OnboardingAction.LoginOrRegister, homeServerConnectionConfig: HomeServerConnectionConfig?) {
+    private fun handleDirectLogin(action: OnboardingAction.LoginOrRegister, homeServerConnectionConfig: HomeServerConnectionConfig) {
         setState { copy(isLoading = true) }
         currentJob = viewModelScope.launch {
             directLoginUseCase.execute(action, homeServerConnectionConfig).fold(

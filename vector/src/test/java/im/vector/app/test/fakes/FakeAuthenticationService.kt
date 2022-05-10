@@ -48,12 +48,12 @@ class FakeAuthenticationService : AuthenticationService by mockk() {
         coJustRun { cancelPendingLoginOrRegistration() }
     }
 
-    fun givenWellKnown(matrixId: String, config: HomeServerConnectionConfig?, result: WellknownResult) {
-        coEvery { getWellKnownData(matrixId, config) } returns result
+    fun givenWellKnown(config: HomeServerConnectionConfig, result: WellknownResult) {
+        coEvery { getWellKnownData(config) } returns result
     }
 
-    fun givenWellKnownThrows(matrixId: String, config: HomeServerConnectionConfig?, cause: Throwable) {
-        coEvery { getWellKnownData(matrixId, config) } throws cause
+    fun givenWellKnownThrows(config: HomeServerConnectionConfig, cause: Throwable) {
+        coEvery { getWellKnownData(config) } throws cause
     }
 
     fun givenDirectAuthentication(config: HomeServerConnectionConfig, matrixId: String, password: String, deviceName: String, result: FakeSession) {

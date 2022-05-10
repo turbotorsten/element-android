@@ -99,8 +99,7 @@ interface AuthenticationService {
     /**
      * Perform a wellknown request, using the domain from the matrixId
      */
-    suspend fun getWellKnownData(matrixId: String,
-                                 homeServerConnectionConfig: HomeServerConnectionConfig?): WellknownResult
+    suspend fun getWellKnownData(homeServerConnectionConfig: HomeServerConnectionConfig): WellknownResult
 
     /**
      * Authenticate with a matrixId and a password
