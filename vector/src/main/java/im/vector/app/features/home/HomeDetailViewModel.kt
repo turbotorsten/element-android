@@ -49,10 +49,10 @@ import org.matrix.android.sdk.api.query.ActiveSpaceFilter
 import org.matrix.android.sdk.api.query.RoomCategoryFilter
 import org.matrix.android.sdk.api.session.Session
 import org.matrix.android.sdk.api.session.crypto.NewSessionListener
-import org.matrix.android.sdk.api.session.initsync.SyncStatusService
 import org.matrix.android.sdk.api.session.room.RoomSortOrder
 import org.matrix.android.sdk.api.session.room.model.Membership
 import org.matrix.android.sdk.api.session.room.roomSummaryQueryParams
+import org.matrix.android.sdk.api.session.sync.SyncRequestState
 import org.matrix.android.sdk.api.util.toMatrixItem
 import org.matrix.android.sdk.flow.flow
 import timber.log.Timber
@@ -198,11 +198,11 @@ class HomeDetailViewModel @AssistedInject constructor(
                     copy(syncState = syncState)
                 }
 
-        session.syncStatusService().getSyncStatusLive()
+        session.syncService().getSyncRequestStateLive()
                 .asFlow()
-                .filterIsInstance<SyncStatusService.Status.IncrementalSyncStatus>()
+                .filterIsInstance<SyncRequestState.IncrementalSyncRequestState>()
                 .setOnEach {
-                    copy(incrementalSyncStatus = it)
+                    copy(incrementalSyncRequestState = it)
                 }
     }
 

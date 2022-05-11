@@ -434,7 +434,7 @@ class KeyShareTests : InstrumentedTest {
 
         // /!\ Stop initial alice session syncing so that it can't reply
         aliceSession.cryptoService().enableKeyGossiping(false)
-        aliceSession.stopSync()
+        aliceSession.syncService().stopSync()
 
         // Let's now try to request
         aliceNewSession.cryptoService().reRequestRoomKeyForEvent(sentEvents.first().root)
@@ -457,7 +457,7 @@ class KeyShareTests : InstrumentedTest {
 
         // let's wake up alice
         aliceSession.cryptoService().enableKeyGossiping(true)
-        aliceSession.startSync(true)
+        aliceSession.syncService().startSync(true)
 
         // We should now get a reply from first session
         commonTestHelper.waitWithLatch { latch ->

@@ -45,10 +45,10 @@ import org.matrix.android.sdk.api.extensions.tryOrNull
 import org.matrix.android.sdk.api.session.crypto.model.CryptoDeviceInfo
 import org.matrix.android.sdk.api.session.crypto.model.MXUsersDevicesMap
 import org.matrix.android.sdk.api.session.getUser
-import org.matrix.android.sdk.api.session.initsync.SyncStatusService
 import org.matrix.android.sdk.api.session.pushrules.RuleIds
 import org.matrix.android.sdk.api.session.room.model.Membership
 import org.matrix.android.sdk.api.session.room.roomSummaryQueryParams
+import org.matrix.android.sdk.api.session.sync.SyncRequestState
 import org.matrix.android.sdk.api.settings.LightweightSettingsStorage
 import org.matrix.android.sdk.api.util.awaitCallback
 import org.matrix.android.sdk.api.util.toMatrixItem
@@ -176,26 +176,26 @@ class HomeActivityViewModel @AssistedInject constructor(
     private fun observeInitialSync() {
         val session = activeSessionHolder.getSafeActiveSession() ?: return
 
-        session.syncStatusService().getSyncStatusLive()
+        session.syncService().getSyncRequestStateLive()
                 .asFlow()
                 .onEach { status ->
                     when (status) {
-                        is SyncStatusService.Status.InitialSyncProgressing -> {
+                        is SyncRequestState.InitialSyncProgressing -> {
                             // Schedule a check of the bootstrap when the init sync will be finished
                             checkBootstrap = true
                         }
-                        is SyncStatusService.Status.Idle                   -> {
+                        is SyncRequestState.Idle                   -> {
                             if (checkBootstrap) {
                                 checkBootstrap = false
                                 maybeBootstrapCrossSigningAfterInitialSync()
                             }
                         }
-                        else                                               -> Unit
+                        else                                       -> Unit
                     }
 
                     setState {
                         copy(
-                                syncStatusServiceStatus = status
+                                syncRequestState = status
                         )
                     }
                 }

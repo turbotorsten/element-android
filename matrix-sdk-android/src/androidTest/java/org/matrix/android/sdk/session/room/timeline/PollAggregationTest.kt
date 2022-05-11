@@ -60,7 +60,7 @@ class PollAggregationTest : InstrumentedTest {
         // Bob creates a poll
         roomFromBobPOV.sendService().sendPoll(PollType.DISCLOSED, pollQuestion, pollOptions)
 
-        aliceSession.startSync(true)
+        aliceSession.syncService().startSync(true)
         val aliceTimeline = roomFromAlicePOV.timelineService().createTimeline(null, TimelineSettings(30))
         aliceTimeline.start()
 
@@ -136,7 +136,7 @@ class PollAggregationTest : InstrumentedTest {
 
         aliceTimeline.removeAllListeners()
 
-        aliceSession.stopSync()
+        aliceSession.syncService().stopSync()
         aliceTimeline.dispose()
         cryptoTestData.cleanUp(commonTestHelper)
     }
