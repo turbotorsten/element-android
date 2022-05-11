@@ -65,6 +65,11 @@ class DebugFeaturesStateFactory @Inject constructor(
                                 key = DebugFeatureKeys.liveLocationSharing,
                                 factory = VectorFeatures::isLiveLocationEnabled
                         ),
+                        createBooleanFeature(
+                                label = "Start DM on first message",
+                                key = DebugFeatureKeys.startDmOnFirstMsg,
+                                factory = VectorFeatures::shouldStartDmOnFirstMessage
+                        ),
                 )
         )
     }

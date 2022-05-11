@@ -28,6 +28,7 @@ interface VectorFeatures {
     fun isOnboardingCombinedRegisterEnabled(): Boolean
     fun isLiveLocationEnabled(): Boolean
     fun isScreenSharingEnabled(): Boolean
+    fun shouldStartDmOnFirstMessage(): Boolean
 
     enum class OnboardingVariant {
         LEGACY,
@@ -45,4 +46,5 @@ class DefaultVectorFeatures : VectorFeatures {
     override fun isOnboardingCombinedRegisterEnabled() = false
     override fun isLiveLocationEnabled(): Boolean = false
     override fun isScreenSharingEnabled(): Boolean = true
+    override fun shouldStartDmOnFirstMessage(): Boolean = false
 }
