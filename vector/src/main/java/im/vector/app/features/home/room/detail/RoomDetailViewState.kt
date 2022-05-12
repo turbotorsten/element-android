@@ -26,6 +26,7 @@ import org.matrix.android.sdk.api.session.initsync.SyncStatusService
 import org.matrix.android.sdk.api.session.room.members.ChangeMembershipState
 import org.matrix.android.sdk.api.session.room.model.RoomMemberSummary
 import org.matrix.android.sdk.api.session.room.model.RoomSummary
+import org.matrix.android.sdk.api.session.room.model.localecho.RoomLocalEcho
 import org.matrix.android.sdk.api.session.room.sender.SenderInfo
 import org.matrix.android.sdk.api.session.sync.SyncState
 import org.matrix.android.sdk.api.session.threads.ThreadNotificationBadgeState
@@ -103,4 +104,6 @@ data class RoomDetailViewState(
     fun isDm() = asyncRoomSummary()?.isDirect == true
 
     fun isThreadTimeline() = rootThreadEventId != null
+
+    fun isLocalRoom() = RoomLocalEcho.isLocalEchoId(roomId)
 }
