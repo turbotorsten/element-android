@@ -33,11 +33,12 @@ import javax.inject.Inject
 
 private val loggerTag = LoggerTag("MegolmSessionDataImporter", LoggerTag.CRYPTO)
 
-internal class MegolmSessionDataImporter @Inject constructor(private val olmDevice: MXOlmDevice,
-                                                             private val roomDecryptorProvider: RoomDecryptorProvider,
-                                                             private val outgoingKeyRequestManager: OutgoingKeyRequestManager,
-                                                             private val cryptoStore: IMXCryptoStore,
-                                                             private val clock: Clock,
+internal class MegolmSessionDataImporter @Inject constructor(
+        private val olmDevice: MXOlmDevice,
+        private val roomDecryptorProvider: RoomDecryptorProvider,
+        private val outgoingKeyRequestManager: OutgoingKeyRequestManager,
+        private val cryptoStore: IMXCryptoStore,
+        private val clock: Clock,
 ) {
 
     /**
@@ -81,8 +82,9 @@ internal class MegolmSessionDataImporter @Inject constructor(private val olmDevi
                             megolmSessionData.senderKey ?: "",
                             tryOrNull {
                                 olmInboundGroupSessionWrappers
-                                        .firstOrNull { it.olmInboundGroupSession?.sessionIdentifier() == megolmSessionData.sessionId }
-                                        ?.firstKnownIndex?.toInt()
+                                        .firstOrNull { it.session.sessionIdentifier() == megolmSessionData.sessionId }
+                                        ?.session?.firstKnownIndex
+                                        ?.toInt()
                             } ?: 0
                     )
 

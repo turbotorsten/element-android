@@ -76,7 +76,7 @@ class PreShareKeysTest : InstrumentedTest {
         assertNotNull("Bob should have received and decrypted a room key event from alice", bobInboundForAlice)
         assertEquals("Wrong room", e2eRoomID, bobInboundForAlice!!.roomId)
 
-        val megolmSessionId = bobInboundForAlice.olmInboundGroupSession!!.sessionIdentifier()
+        val megolmSessionId = bobInboundForAlice.session.sessionIdentifier()
 
         assertEquals("Wrong session", aliceOutboundSessionInRoom, megolmSessionId)
 
