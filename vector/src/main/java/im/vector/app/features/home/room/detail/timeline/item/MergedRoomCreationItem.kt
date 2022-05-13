@@ -16,8 +16,6 @@
 
 package im.vector.app.features.home.room.detail.timeline.item
 
-import android.graphics.Typeface
-import android.os.Build
 import android.text.SpannableString
 import android.text.method.MovementMethod
 import android.text.style.ClickableSpan
@@ -62,7 +60,12 @@ abstract class MergedRoomCreationItem : BasedMergedItem<MergedRoomCreationItem.H
         super.bind(holder)
 
         bindCreationSummaryTile(holder)
+        bindMergedViews(holder)
+    }
 
+    private fun bindMergedViews(holder: Holder) {
+        val isLocalRoom = RoomLocalEcho.isLocalEchoId(attributes.roomSummary?.roomId.orEmpty())
+        holder.mergedView.isVisible = !isLocalRoom
         if (attributes.isCollapsed) {
             // Take the oldest data
             val data = distinctMergeData.lastOrNull()
@@ -229,6 +232,7 @@ abstract class MergedRoomCreationItem : BasedMergedItem<MergedRoomCreationItem.H
     }
 
     class Holder : BasedMergedItem.Holder(STUB_ID) {
+        val mergedView by bind<View>(R.id.mergedSumContainer)
         val summaryView by bind<TextView>(R.id.itemNoticeTextView)
         val avatarView by bind<ImageView>(R.id.itemNoticeAvatarView)
         val encryptionTile by bind<ViewGroup>(R.id.creationEncryptionTile)
