@@ -19,6 +19,7 @@ package im.vector.app.features.home.room.detail.timeline.factory
 import im.vector.app.R
 import im.vector.app.core.di.ActiveSessionHolder
 import im.vector.app.core.extensions.prevOrNull
+import im.vector.app.core.resources.ColorProvider
 import im.vector.app.features.home.AvatarRenderer
 import im.vector.app.features.home.room.detail.timeline.TimelineEventController
 import im.vector.app.features.home.room.detail.timeline.helper.AvatarSizeProvider
@@ -48,6 +49,7 @@ import javax.inject.Inject
 
 class MergedHeaderItemFactory @Inject constructor(private val activeSessionHolder: ActiveSessionHolder,
                                                   private val avatarRenderer: AvatarRenderer,
+                                                  private val colorProvider: ColorProvider,
                                                   private val avatarSizeProvider: AvatarSizeProvider,
                                                   private val timelineEventVisibilityHelper: TimelineEventVisibilityHelper) {
 
@@ -104,6 +106,7 @@ class MergedHeaderItemFactory @Inject constructor(private val activeSessionHolde
                     highlighted = true
                 }
                 val data = BasedMergedItem.Data(
+                        roomId = mergedEvent.root.roomId,
                         userId = mergedEvent.root.senderId ?: "",
                         avatarUrl = mergedEvent.senderInfo.avatarUrl,
                         memberName = mergedEvent.senderInfo.disambiguatedDisplayName,
@@ -184,6 +187,7 @@ class MergedHeaderItemFactory @Inject constructor(private val activeSessionHolde
                             highlighted = true
                         }
                         val data = BasedMergedItem.Data(
+                                roomId = mergedEvent.root.roomId,
                                 userId = mergedEvent.root.senderId ?: "",
                                 avatarUrl = mergedEvent.senderInfo.avatarUrl,
                                 memberName = mergedEvent.senderInfo.disambiguatedDisplayName,
@@ -214,6 +218,7 @@ class MergedHeaderItemFactory @Inject constructor(private val activeSessionHolde
                     isCollapsed = isCollapsed,
                     mergeData = mergedData,
                     avatarRenderer = avatarRenderer,
+                    colorProvider = colorProvider,
                     onCollapsedStateChanged = {
                         mergeItemCollapseStates[event.localId] = it
                         requestModelBuild()

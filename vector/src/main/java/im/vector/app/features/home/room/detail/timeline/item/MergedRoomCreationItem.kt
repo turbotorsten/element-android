@@ -16,6 +16,8 @@
 
 package im.vector.app.features.home.room.detail.timeline.item
 
+import android.graphics.Typeface
+import android.os.Build
 import android.text.SpannableString
 import android.text.method.MovementMethod
 import android.text.style.ClickableSpan
@@ -28,11 +30,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.core.widget.TextViewCompat
 import com.airbnb.epoxy.EpoxyAttribute
 import com.airbnb.epoxy.EpoxyModelClass
 import im.vector.app.R
 import im.vector.app.core.epoxy.onClick
 import im.vector.app.core.extensions.setTextOrHide
+import im.vector.app.core.resources.ColorProvider
 import im.vector.app.core.utils.tappableMatchingText
 import im.vector.app.features.home.AvatarRenderer
 import im.vector.app.features.home.room.detail.RoomDetailAction
@@ -40,6 +44,7 @@ import im.vector.app.features.home.room.detail.timeline.TimelineEventController
 import im.vector.app.features.home.room.detail.timeline.tools.linkify
 import me.gujun.android.span.span
 import org.matrix.android.sdk.api.session.room.model.RoomSummary
+import org.matrix.android.sdk.api.session.room.model.localecho.RoomLocalEcho
 import org.matrix.android.sdk.api.util.toMatrixItem
 
 @EpoxyModelClass(layout = R.layout.item_timeline_event_base_noinfo)
@@ -102,10 +107,16 @@ abstract class MergedRoomCreationItem : BasedMergedItem<MergedRoomCreationItem.H
             }
             if (attributes.isEncryptionAlgorithmSecure) {
                 holder.e2eTitleTextView.text = holder.expandView.resources.getString(R.string.encryption_enabled)
-                holder.e2eTitleDescriptionView.text = if (data?.isDirectRoom == true) {
-                    holder.expandView.resources.getString(R.string.direct_room_encryption_enabled_tile_description)
-                } else {
-                    holder.expandView.resources.getString(R.string.encryption_enabled_tile_description)
+                holder.e2eTitleDescriptionView.text = when {
+                    data?.isDirectRoom == true && RoomLocalEcho.isLocalEchoId(data.roomId.orEmpty()) -> {
+                        holder.expandView.resources.getString(R.string.direct_room_encryption_enabled_tile_description_future)
+                    }
+                    data?.isDirectRoom == true                                                       -> {
+                        holder.expandView.resources.getString(R.string.direct_room_encryption_enabled_tile_description)
+                    }
+                    else                                                                             -> {
+                        holder.expandView.resources.getString(R.string.encryption_enabled_tile_description)
+                    }
                 }
                 holder.e2eTitleDescriptionView.textAlignment = View.TEXT_ALIGNMENT_CENTER
                 holder.e2eTitleTextView.setCompoundDrawablesWithIntrinsicBounds(
@@ -130,17 +141,32 @@ abstract class MergedRoomCreationItem : BasedMergedItem<MergedRoomCreationItem.H
         val roomDisplayName = roomSummary?.displayName
         holder.roomNameText.setTextOrHide(roomDisplayName)
         val isDirect = roomSummary?.isDirect == true
+        val isLocalRoom = RoomLocalEcho.isLocalEchoId(roomSummary?.roomId.orEmpty())
         val membersCount = roomSummary?.otherMemberIds?.size ?: 0
 
-        if (isDirect) {
-            holder.roomDescriptionText.text = holder.view.resources.getString(
-                    R.string.this_is_the_beginning_of_dm,
-                    distinctMergeData.lastOrNull()?.memberName ?: ""
-            )
-        } else if (roomDisplayName.isNullOrBlank() || roomSummary.name.isBlank()) {
-            holder.roomDescriptionText.text = holder.view.resources.getString(R.string.this_is_the_beginning_of_room_no_name)
-        } else {
-            holder.roomDescriptionText.text = holder.view.resources.getString(R.string.this_is_the_beginning_of_room, roomDisplayName)
+        when {
+            isDirect && isLocalRoom                                       -> {
+                holder.roomDescriptionText.apply {
+                    text = holder.view.resources.getString(
+                            R.string.send_your_first_msg_to_invite,
+                            distinctMergeData.lastOrNull()?.memberName ?: ""
+                    )
+                    setTextColor(attributes.colorProvider.getColorFromAttribute(R.attr.vctr_content_primary))
+                    TextViewCompat.setTextAppearance(this, R.style.TextAppearance_Vector_Headline_Medium)
+                }
+            }
+            isDirect                                                      -> {
+                holder.roomDescriptionText.text = holder.view.resources.getString(
+                        R.string.this_is_the_beginning_of_dm,
+                        distinctMergeData.lastOrNull()?.memberName ?: ""
+                )
+            }
+            roomDisplayName.isNullOrBlank() || roomSummary.name.isBlank() -> {
+                holder.roomDescriptionText.text = holder.view.resources.getString(R.string.this_is_the_beginning_of_room_no_name)
+            }
+            else                                                          -> {
+                holder.roomDescriptionText.text = holder.view.resources.getString(R.string.this_is_the_beginning_of_room, roomDisplayName)
+            }
         }
 
         val topic = roomSummary?.topic
@@ -227,6 +253,7 @@ abstract class MergedRoomCreationItem : BasedMergedItem<MergedRoomCreationItem.H
             override val mergeData: List<Data>,
             override val avatarRenderer: AvatarRenderer,
             override val onCollapsedStateChanged: (Boolean) -> Unit,
+            val colorProvider: ColorProvider,
             val callback: TimelineEventController.Callback? = null,
             val currentUserId: String,
             val hasEncryptionEvent: Boolean,
