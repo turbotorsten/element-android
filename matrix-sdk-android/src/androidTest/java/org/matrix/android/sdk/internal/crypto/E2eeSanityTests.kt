@@ -82,9 +82,8 @@ class E2eeSanityTests : InstrumentedTest {
      * Alice sends a new message, then check that the new one can be decrypted
      */
     @Test
-    fun testSendingE2EEMessages() {
-        val testHelper = CommonTestHelper(context())
-        val cryptoTestHelper = CryptoTestHelper(testHelper)
+    fun testSendingE2EEMessages() = withTestHelpers(context()) { cryptoTestHelper ->
+        val testHelper = cryptoTestHelper.testHelper
 
         val cryptoTestData = cryptoTestHelper.doE2ETestWithAliceAndBobInARoom(true)
         val aliceSession = cryptoTestData.firstSession
@@ -198,13 +197,6 @@ class E2eeSanityTests : InstrumentedTest {
                 }
             }
         }
-
-        otherAccounts.forEach {
-            testHelper.signOutAndClose(it)
-        }
-        newAccount.forEach { testHelper.signOutAndClose(it) }
-
-        cryptoTestData.cleanUp(testHelper)
     }
 
     @Test
@@ -230,9 +222,8 @@ class E2eeSanityTests : InstrumentedTest {
      * 9. Check that new session can decrypt
      */
     @Test
-    fun testBasicBackupImport() {
-        val testHelper = CommonTestHelper(context())
-        val cryptoTestHelper = CryptoTestHelper(testHelper)
+    fun testBasicBackupImport() = withTestHelpers(context()) { cryptoTestHelper ->
+        val testHelper = cryptoTestHelper.testHelper
 
         val cryptoTestData = cryptoTestHelper.doE2ETestWithAliceAndBobInARoom(true)
         val aliceSession = cryptoTestData.firstSession
@@ -344,8 +335,6 @@ class E2eeSanityTests : InstrumentedTest {
 
         // ensure bob can now decrypt
         cryptoTestHelper.ensureCanDecrypt(sentEventIds, newBobSession, e2eRoomID, messagesText)
-
-        testHelper.signOutAndClose(newBobSession)
     }
 
     /**
@@ -353,9 +342,8 @@ class E2eeSanityTests : InstrumentedTest {
      * get them from an older one.
      */
     @Test
-    fun testSimpleGossip() {
-        val testHelper = CommonTestHelper(context())
-        val cryptoTestHelper = CryptoTestHelper(testHelper)
+    fun testSimpleGossip() = withTestHelpers(context()) { cryptoTestHelper ->
+        val testHelper = cryptoTestHelper.testHelper
 
         val cryptoTestData = cryptoTestHelper.doE2ETestWithAliceAndBobInARoom(true)
         val aliceSession = cryptoTestData.firstSession
@@ -449,18 +437,14 @@ class E2eeSanityTests : InstrumentedTest {
         }
 
         cryptoTestHelper.ensureCanDecrypt(sentEventIds, newBobSession, e2eRoomID, messagesText)
-
-        cryptoTestData.cleanUp(testHelper)
-        testHelper.signOutAndClose(newBobSession)
     }
 
     /**
      * Test that if a better key is forwarded (lower index, it is then used)
      */
     @Test
-    fun testForwardBetterKey() {
-        val testHelper = CommonTestHelper(context())
-        val cryptoTestHelper = CryptoTestHelper(testHelper)
+    fun testForwardBetterKey() = withTestHelpers(context()) { cryptoTestHelper ->
+        val testHelper = cryptoTestHelper.testHelper
 
         val cryptoTestData = cryptoTestHelper.doE2ETestWithAliceAndBobInARoom(true)
         val aliceSession = cryptoTestData.firstSession
@@ -576,10 +560,6 @@ class E2eeSanityTests : InstrumentedTest {
                 canDecryptFirst && canDecryptSecond
             }
         }
-
-        testHelper.signOutAndClose(aliceSession)
-        testHelper.signOutAndClose(bobSessionWithBetterKey)
-        testHelper.signOutAndClose(newBobSession)
     }
 
     private fun sendMessageInRoom(testHelper: CommonTestHelper, aliceRoomPOV: Room, text: String): String? {
@@ -610,9 +590,8 @@ class E2eeSanityTests : InstrumentedTest {
      * Test that if a better key is forwared (lower index, it is then used)
      */
     @Test
-    fun testSelfInteractiveVerificationAndGossip() {
-        val testHelper = CommonTestHelper(context())
-        val cryptoTestHelper = CryptoTestHelper(testHelper)
+    fun testASelfInteractiveVerificationAndGossip() = withTestHelpers(context()) { cryptoTestHelper ->
+        val testHelper = cryptoTestHelper.testHelper
 
         val aliceSession = testHelper.createAccount("alice", SessionTestParams(true))
         cryptoTestHelper.bootstrapSecurity(aliceSession)
@@ -751,9 +730,6 @@ class E2eeSanityTests : InstrumentedTest {
                 aliceSession.cryptoService().keysBackupService().getKeyBackupRecoveryKeyInfo()!!.version,
                 aliceNewSession.cryptoService().keysBackupService().getKeyBackupRecoveryKeyInfo()!!.version
         )
-
-        testHelper.signOutAndClose(aliceSession)
-        testHelper.signOutAndClose(aliceNewSession)
     }
 
     private fun ensureMembersHaveJoined(testHelper: CommonTestHelper, aliceSession: Session, otherAccounts: List<Session>, e2eRoomID: String) {
