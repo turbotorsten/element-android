@@ -20,7 +20,6 @@ import io.realm.Realm
 import io.realm.RealmQuery
 import io.realm.kotlin.where
 import org.matrix.android.sdk.internal.database.model.EventAnnotationsSummaryEntity
-import org.matrix.android.sdk.internal.database.model.TimelineEventEntity
 import org.matrix.android.sdk.internal.database.model.TimelineEventEntityFields
 import org.matrix.android.sdk.internal.database.model.livelocation.LiveLocationShareAggregatedSummaryEntity
 import org.matrix.android.sdk.internal.database.model.livelocation.LiveLocationShareAggregatedSummaryEntityFields
