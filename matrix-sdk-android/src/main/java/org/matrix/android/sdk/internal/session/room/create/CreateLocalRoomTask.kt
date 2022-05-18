@@ -22,14 +22,16 @@ import io.realm.RealmConfiguration
 import io.realm.kotlin.createObject
 import kotlinx.coroutines.TimeoutCancellationException
 import org.matrix.android.sdk.api.extensions.orFalse
+import org.matrix.android.sdk.api.extensions.tryOrNull
 import org.matrix.android.sdk.api.session.events.model.Content
 import org.matrix.android.sdk.api.session.events.model.Event
 import org.matrix.android.sdk.api.session.events.model.EventType
 import org.matrix.android.sdk.api.session.events.model.toContent
 import org.matrix.android.sdk.api.session.room.failure.CreateRoomFailure
+import org.matrix.android.sdk.api.session.room.model.GuestAccess
 import org.matrix.android.sdk.api.session.room.model.Membership
+import org.matrix.android.sdk.api.session.room.model.RoomDirectoryVisibility
 import org.matrix.android.sdk.api.session.room.model.RoomHistoryVisibility
-import org.matrix.android.sdk.api.session.room.model.RoomHistoryVisibilityContent
 import org.matrix.android.sdk.api.session.room.model.RoomMemberContent
 import org.matrix.android.sdk.api.session.room.model.create.CreateRoomParams
 import org.matrix.android.sdk.api.session.room.model.create.RoomCreateContent
@@ -37,6 +39,7 @@ import org.matrix.android.sdk.api.session.room.model.localecho.RoomLocalEcho
 import org.matrix.android.sdk.api.session.room.send.SendState
 import org.matrix.android.sdk.api.session.sync.model.RoomSyncSummary
 import org.matrix.android.sdk.api.session.user.UserService
+import org.matrix.android.sdk.api.session.user.model.User
 import org.matrix.android.sdk.internal.database.helper.addTimelineEvent
 import org.matrix.android.sdk.internal.database.mapper.asDomain
 import org.matrix.android.sdk.internal.database.mapper.toEntity
@@ -79,7 +82,7 @@ internal class CreateLocalRoomTask @Inject constructor(
 ) : CreateRoomTask {
 
     override suspend fun execute(params: CreateRoomParams): String {
-        val createRoomBody = createRoomBodyBuilder.build(params)
+        val createRoomBody = createRoomBodyBuilder.build(params.withDefault())
         val roomId = RoomLocalEcho.createLocalEchoId()
         monarchy.awaitTransaction { realm ->
             createLocalRoomEntity(realm, roomId, createRoomBody)
@@ -195,13 +198,24 @@ internal class CreateLocalRoomTask @Inject constructor(
      * @return the list of events
      */
     private suspend fun createLocalRoomEvents(createRoomBody: CreateRoomBody): List<Event> {
-        val me = userService.getUser(userId)!!
-        val invitedUsers = createRoomBody.invitedUserIds.orEmpty().map { userService.getUser(it) ?: userService.resolveUser(it) }
+        val myUser = userService.getUser(userId) ?: User(userId)
+        val invitedUsers = createRoomBody.invitedUserIds.orEmpty()
+                .mapNotNull { tryOrNull { userService.resolveUser(it) } }
+
         val createRoomEvent = createFakeEvent(
                 type = EventType.STATE_ROOM_CREATE,
                 content = RoomCreateContent(
                         creator = userId
                 ).toContent()
+        )
+        val myRoomMemberEvent = createFakeEvent(
+                type = EventType.STATE_ROOM_MEMBER,
+                content = RoomMemberContent(
+                        membership = Membership.JOIN,
+                        displayName = myUser.displayName,
+                        avatarUrl = myUser.avatarUrl
+                ).toContent(),
+                stateKey = userId
         )
         val roomMemberEvents = invitedUsers.map {
             createFakeEvent(
@@ -215,25 +229,10 @@ internal class CreateLocalRoomTask @Inject constructor(
                     stateKey = it.userId
             )
         }
-        val myRoomMemberEvent = createFakeEvent(
-                type = EventType.STATE_ROOM_MEMBER,
-                content = RoomMemberContent(
-                        membership = Membership.JOIN,
-                        displayName = me.displayName,
-                        avatarUrl = me.avatarUrl
-                ).toContent(),
-                stateKey = userId
-        )
-
-        val historyEvent = createFakeEvent(
-                type = EventType.STATE_ROOM_HISTORY_VISIBILITY,
-                content = RoomHistoryVisibilityContent(historyVisibilityStr = RoomHistoryVisibility.SHARED.name).toContent()
-        )
 
         return buildList {
             add(createRoomEvent)
             add(myRoomMemberEvent)
-            add(historyEvent)
             addAll(createRoomBody.initialStates.orEmpty().map { createFakeEvent(it.type, it.content, it.stateKey) })
             addAll(roomMemberEvents)
         }
@@ -257,5 +256,14 @@ internal class CreateLocalRoomTask @Inject constructor(
                 originServerTs = clock.epochMillis(),
                 eventId = UUID.randomUUID().toString()
         )
+    }
+
+    /**
+     * Setup default values to the CreateRoomParams as the room is created locally (the default values will not be defined by the server).
+     */
+    private fun CreateRoomParams.withDefault() = this.apply {
+        if (visibility == null) visibility = RoomDirectoryVisibility.PRIVATE
+        if (historyVisibility == null) historyVisibility = RoomHistoryVisibility.SHARED
+        if (guestAccess == null) guestAccess = GuestAccess.Forbidden
     }
 }
