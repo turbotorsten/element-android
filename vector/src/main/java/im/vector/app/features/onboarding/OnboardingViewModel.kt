@@ -284,7 +284,7 @@ class OnboardingViewModel @AssistedInject constructor(
                                     overrideNextStage?.invoke() ?: _viewEvents.post(OnboardingViewEvents.DisplayRegistrationStage(it.stage))
                                 }
                                 is RegistrationActionHandler.Result.Success          -> onSessionCreated(it.session, isAccountCreated = true)
-                                RegistrationActionHandler.Result.StartRegistration   -> _viewEvents.post(OnboardingViewEvents.DisplayStartRegistration)
+                                RegistrationActionHandler.Result.StartRegistration   -> overrideNextStage?.invoke() ?: _viewEvents.post(OnboardingViewEvents.DisplayStartRegistration)
                                 RegistrationActionHandler.Result.UnsupportedStage    -> _viewEvents.post(OnboardingViewEvents.DisplayRegistrationFallback)
                                 is RegistrationActionHandler.Result.SendEmailSuccess -> _viewEvents.post(OnboardingViewEvents.OnSendEmailSuccess(it.email))
                                 is RegistrationActionHandler.Result.Error            -> _viewEvents.post(OnboardingViewEvents.Failure(it.cause))
