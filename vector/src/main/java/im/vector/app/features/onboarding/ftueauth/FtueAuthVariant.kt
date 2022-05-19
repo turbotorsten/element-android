@@ -353,13 +353,17 @@ class FtueAuthVariant(
         when (stage) {
             is Stage.ReCaptcha -> onCaptcha(stage)
             is Stage.Email     -> onEmail(stage)
-            is Stage.Msisdn    -> addRegistrationStageFragmentToBackstack(
-                    FtueAuthGenericTextInputFormFragment::class.java,
-                    FtueAuthGenericTextInputFormFragmentArgument(TextInputFormFragmentMode.SetMsisdn, stage.mandatory),
-            )
+            is Stage.Msisdn    -> onMsisdn(stage)
             is Stage.Terms     -> onTerms(stage)
             else               -> Unit // Should not happen
         }
+    }
+
+    private fun onMsisdn(stage: Stage) {
+        addRegistrationStageFragmentToBackstack(
+                FtueAuthGenericTextInputFormFragment::class.java,
+                FtueAuthGenericTextInputFormFragmentArgument(TextInputFormFragmentMode.SetMsisdn, stage.mandatory),
+        )
     }
 
     private fun onEmail(stage: Stage) {
