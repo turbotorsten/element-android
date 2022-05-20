@@ -21,6 +21,7 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import android.content.res.Resources
+import com.google.i18n.phonenumbers.PhoneNumberUtil
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -185,4 +186,8 @@ object VectorStaticModule {
     fun providesAnalyticsConfig(): AnalyticsConfig {
         return analyticsConfig
     }
+
+    @Provides
+    fun providesPhoneNumberUtil(): PhoneNumberUtil = PhoneNumberUtil.getInstance()
+
 }
