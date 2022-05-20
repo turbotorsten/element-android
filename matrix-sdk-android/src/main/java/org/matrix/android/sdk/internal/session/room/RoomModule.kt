@@ -45,9 +45,8 @@ import org.matrix.android.sdk.internal.session.room.alias.GetRoomIdByAliasTask
 import org.matrix.android.sdk.internal.session.room.alias.GetRoomLocalAliasesTask
 import org.matrix.android.sdk.internal.session.room.create.CreateLocalRoomTask
 import org.matrix.android.sdk.internal.session.room.create.CreateRoomTask
-import org.matrix.android.sdk.internal.session.room.create.Default
+import org.matrix.android.sdk.internal.session.room.create.DefaultCreateLocalRoomTask
 import org.matrix.android.sdk.internal.session.room.create.DefaultCreateRoomTask
-import org.matrix.android.sdk.internal.session.room.create.Local
 import org.matrix.android.sdk.internal.session.room.delete.DefaultDeleteLocalRoomTask
 import org.matrix.android.sdk.internal.session.room.delete.DeleteLocalRoomTask
 import org.matrix.android.sdk.internal.session.room.directory.DefaultGetPublicRoomTask
@@ -195,12 +194,10 @@ internal abstract class RoomModule {
     abstract fun bindFileService(service: DefaultFileService): FileService
 
     @Binds
-    @Default
     abstract fun bindCreateRoomTask(task: DefaultCreateRoomTask): CreateRoomTask
 
     @Binds
-    @Local
-    abstract fun bindCreateLocalRoomTask(task: CreateLocalRoomTask): CreateRoomTask
+    abstract fun bindCreateLocalRoomTask(task: DefaultCreateLocalRoomTask): CreateLocalRoomTask
 
     @Binds
     abstract fun bindDeleteLocalRoomTask(task: DefaultDeleteLocalRoomTask): DeleteLocalRoomTask

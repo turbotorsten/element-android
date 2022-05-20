@@ -44,9 +44,8 @@ import org.matrix.android.sdk.internal.database.model.RoomMemberSummaryEntityFie
 import org.matrix.android.sdk.internal.di.SessionDatabase
 import org.matrix.android.sdk.internal.session.room.alias.DeleteRoomAliasTask
 import org.matrix.android.sdk.internal.session.room.alias.GetRoomIdByAliasTask
+import org.matrix.android.sdk.internal.session.room.create.CreateLocalRoomTask
 import org.matrix.android.sdk.internal.session.room.create.CreateRoomTask
-import org.matrix.android.sdk.internal.session.room.create.Default
-import org.matrix.android.sdk.internal.session.room.create.Local
 import org.matrix.android.sdk.internal.session.room.delete.DeleteLocalRoomTask
 import org.matrix.android.sdk.internal.session.room.membership.RoomChangeMembershipStateDataSource
 import org.matrix.android.sdk.internal.session.room.membership.RoomMemberHelper
@@ -63,8 +62,8 @@ import javax.inject.Inject
 
 internal class DefaultRoomService @Inject constructor(
         @SessionDatabase private val monarchy: Monarchy,
-        @Default private val createRoomTask: CreateRoomTask,
-        @Local private val createLocalRoomTask: CreateRoomTask,
+        private val createRoomTask: CreateRoomTask,
+        private val createLocalRoomTask: CreateLocalRoomTask,
         private val deleteLocalRoomTask: DeleteLocalRoomTask,
         private val joinRoomTask: JoinRoomTask,
         private val markAllRoomsReadTask: MarkAllRoomsReadTask,

@@ -40,6 +40,7 @@ import org.matrix.android.sdk.api.session.room.send.SendState
 import org.matrix.android.sdk.api.session.sync.model.RoomSyncSummary
 import org.matrix.android.sdk.api.session.user.UserService
 import org.matrix.android.sdk.api.session.user.model.User
+import org.matrix.android.sdk.internal.database.awaitNotEmptyResult
 import org.matrix.android.sdk.internal.database.helper.addTimelineEvent
 import org.matrix.android.sdk.internal.database.mapper.asDomain
 import org.matrix.android.sdk.internal.database.mapper.toEntity
@@ -58,19 +59,16 @@ import org.matrix.android.sdk.internal.session.events.getFixedRoomMemberContent
 import org.matrix.android.sdk.internal.session.room.membership.RoomMemberEventHandler
 import org.matrix.android.sdk.internal.session.room.summary.RoomSummaryUpdater
 import org.matrix.android.sdk.internal.session.room.timeline.PaginationDirection
+import org.matrix.android.sdk.internal.task.Task
 import org.matrix.android.sdk.internal.util.awaitTransaction
 import org.matrix.android.sdk.internal.util.time.Clock
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import javax.inject.Qualifier
-import org.matrix.android.sdk.internal.database.awaitNotEmptyResult as awaitNotEmptyResult1
 
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class Local
+internal interface CreateLocalRoomTask : Task<CreateRoomParams, String>
 
-internal class CreateLocalRoomTask @Inject constructor(
+internal class DefaultCreateLocalRoomTask @Inject constructor(
         @UserId private val userId: String,
         @SessionDatabase private val monarchy: Monarchy,
         private val roomMemberEventHandler: RoomMemberEventHandler,
@@ -79,7 +77,7 @@ internal class CreateLocalRoomTask @Inject constructor(
         private val createRoomBodyBuilder: CreateRoomBodyBuilder,
         private val userService: UserService,
         private val clock: Clock,
-) : CreateRoomTask {
+) : CreateLocalRoomTask {
 
     override suspend fun execute(params: CreateRoomParams): String {
         val createRoomBody = createRoomBodyBuilder.build(params.withDefault())
@@ -91,7 +89,7 @@ internal class CreateLocalRoomTask @Inject constructor(
 
         // Wait for room to be created in DB
         try {
-            awaitNotEmptyResult1(realmConfiguration, TimeUnit.MINUTES.toMillis(1L)) { realm ->
+            awaitNotEmptyResult(realmConfiguration, TimeUnit.MINUTES.toMillis(1L)) { realm ->
                 realm.where(RoomSummaryEntity::class.java)
                         .equalTo(RoomSummaryEntityFields.ROOM_ID, roomId)
                         .equalTo(RoomSummaryEntityFields.MEMBERSHIP_STR, Membership.JOIN.name)

@@ -44,13 +44,8 @@ import org.matrix.android.sdk.internal.util.awaitTransaction
 import org.matrix.android.sdk.internal.util.time.Clock
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
-import javax.inject.Qualifier
 
 internal interface CreateRoomTask : Task<CreateRoomParams, String>
-
-@Qualifier
-@Retention(AnnotationRetention.BINARY)
-annotation class Default
 
 internal class DefaultCreateRoomTask @Inject constructor(
         private val roomAPI: RoomAPI,
