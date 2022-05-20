@@ -26,6 +26,7 @@ import im.vector.app.features.onboarding.ftueauth.MatrixOrgRegistrationStagesCom
 import kotlinx.coroutines.flow.first
 import org.matrix.android.sdk.api.auth.AuthenticationService
 import org.matrix.android.sdk.api.auth.registration.FlowResult
+import org.matrix.android.sdk.api.auth.registration.RegisterThreePid
 import org.matrix.android.sdk.api.auth.registration.Stage
 import org.matrix.android.sdk.api.session.Session
 import javax.inject.Inject
@@ -45,10 +46,11 @@ class RegistrationActionHandler @Inject constructor(
         return when {
             action.ignoresResult() -> Result.Ignored
             else                   -> when (result) {
-                is RegistrationResult.Complete         -> Result.Success(result.session)
-                is RegistrationResult.NextStep         -> processFlowResult(result, state)
-                is RegistrationResult.SendEmailSuccess -> Result.SendEmailSuccess(result.email)
-                is RegistrationResult.Error            -> Result.Error(result.cause)
+                is RegistrationResult.Complete          -> Result.Success(result.session)
+                is RegistrationResult.NextStep          -> processFlowResult(result, state)
+                is RegistrationResult.SendEmailSuccess  -> Result.SendEmailSuccess(result.email.email)
+                is RegistrationResult.SendMsisdnSuccess -> Result.SendMsisdnSuccess(result.msisdn)
+                is RegistrationResult.Error             -> Result.Error(result.cause)
             }
         }
     }
@@ -95,6 +97,7 @@ class RegistrationActionHandler @Inject constructor(
         data class NextStage(val stage: Stage) : Result
         data class Error(val cause: Throwable) : Result
         data class SendEmailSuccess(val email: String) : Result
+        data class SendMsisdnSuccess(val msisdn: RegisterThreePid.Msisdn) : Result
         object MissingNextStage : Result
         object StartRegistration : Result
         object UnsupportedStage : Result

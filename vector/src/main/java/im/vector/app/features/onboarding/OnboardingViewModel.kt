@@ -277,18 +277,20 @@ class OnboardingViewModel @AssistedInject constructor(
                 .fold(
                         onSuccess = {
                             when (it) {
-                                RegistrationActionHandler.Result.Ignored             -> {
+                                RegistrationActionHandler.Result.Ignored              -> {
                                     // do nothing
                                 }
-                                is RegistrationActionHandler.Result.NextStage        -> {
+                                is RegistrationActionHandler.Result.NextStage         -> {
                                     overrideNextStage?.invoke() ?: _viewEvents.post(OnboardingViewEvents.DisplayRegistrationStage(it.stage))
                                 }
-                                is RegistrationActionHandler.Result.Success          -> onSessionCreated(it.session, isAccountCreated = true)
-                                RegistrationActionHandler.Result.StartRegistration   -> overrideNextStage?.invoke() ?: _viewEvents.post(OnboardingViewEvents.DisplayStartRegistration)
-                                RegistrationActionHandler.Result.UnsupportedStage    -> _viewEvents.post(OnboardingViewEvents.DisplayRegistrationFallback)
-                                is RegistrationActionHandler.Result.SendEmailSuccess -> _viewEvents.post(OnboardingViewEvents.OnSendEmailSuccess(it.email))
-                                is RegistrationActionHandler.Result.Error            -> _viewEvents.post(OnboardingViewEvents.Failure(it.cause))
-                                RegistrationActionHandler.Result.MissingNextStage    -> {
+                                is RegistrationActionHandler.Result.Success           -> onSessionCreated(it.session, isAccountCreated = true)
+                                RegistrationActionHandler.Result.StartRegistration    -> overrideNextStage?.invoke()
+                                        ?: _viewEvents.post(OnboardingViewEvents.DisplayStartRegistration)
+                                RegistrationActionHandler.Result.UnsupportedStage     -> _viewEvents.post(OnboardingViewEvents.DisplayRegistrationFallback)
+                                is RegistrationActionHandler.Result.SendEmailSuccess  -> _viewEvents.post(OnboardingViewEvents.OnSendEmailSuccess(it.email))
+                                is RegistrationActionHandler.Result.SendMsisdnSuccess -> _viewEvents.post(OnboardingViewEvents.OnSendMsisdnSuccess(it.msisdn.msisdn))
+                                is RegistrationActionHandler.Result.Error             -> _viewEvents.post(OnboardingViewEvents.Failure(it.cause))
+                                RegistrationActionHandler.Result.MissingNextStage     -> {
                                     _viewEvents.post(OnboardingViewEvents.Failure(IllegalStateException("No next registration stage found")))
                                 }
                             }
