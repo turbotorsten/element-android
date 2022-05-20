@@ -189,5 +189,4 @@ object VectorStaticModule {
 
     @Provides
     fun providesPhoneNumberUtil(): PhoneNumberUtil = PhoneNumberUtil.getInstance()
-
 }
