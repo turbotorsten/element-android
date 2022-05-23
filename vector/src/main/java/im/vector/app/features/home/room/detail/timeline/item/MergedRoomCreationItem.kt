@@ -148,26 +148,27 @@ abstract class MergedRoomCreationItem : BasedMergedItem<MergedRoomCreationItem.H
         val membersCount = roomSummary?.otherMemberIds?.size ?: 0
 
         when {
-            isDirect && isLocalRoom                                       -> {
-                holder.roomDescriptionText.apply {
-                    text = holder.view.resources.getString(
-                            R.string.send_your_first_msg_to_invite,
-                            distinctMergeData.lastOrNull()?.memberName ?: ""
+            isDirect -> {
+                if (isLocalRoom) {
+                    holder.roomDescriptionText.apply {
+                        text = holder.view.resources.getString(
+                                R.string.send_your_first_msg_to_invite,
+                                roomSummary?.displayName ?: ""
+                        )
+                        setTextColor(attributes.colorProvider.getColorFromAttribute(R.attr.vctr_content_primary))
+                        TextViewCompat.setTextAppearance(this, R.style.TextAppearance_Vector_Headline_Medium)
+                    }
+                } else {
+                    holder.roomDescriptionText.text = holder.view.resources.getString(
+                            R.string.this_is_the_beginning_of_dm,
+                            roomSummary?.displayName ?: ""
                     )
-                    setTextColor(attributes.colorProvider.getColorFromAttribute(R.attr.vctr_content_primary))
-                    TextViewCompat.setTextAppearance(this, R.style.TextAppearance_Vector_Headline_Medium)
                 }
-            }
-            isDirect                                                      -> {
-                holder.roomDescriptionText.text = holder.view.resources.getString(
-                        R.string.this_is_the_beginning_of_dm,
-                        distinctMergeData.lastOrNull()?.memberName ?: ""
-                )
             }
             roomDisplayName.isNullOrBlank() || roomSummary.name.isBlank() -> {
                 holder.roomDescriptionText.text = holder.view.resources.getString(R.string.this_is_the_beginning_of_room_no_name)
             }
-            else                                                          -> {
+            else -> {
                 holder.roomDescriptionText.text = holder.view.resources.getString(R.string.this_is_the_beginning_of_room, roomDisplayName)
             }
         }
