@@ -26,6 +26,7 @@ import com.airbnb.mvrx.withState
 import im.vector.app.R
 import im.vector.app.core.platform.VectorBaseFragment
 import im.vector.app.databinding.FragmentBootstrapSetupRecoveryBinding
+import im.vector.app.features.raw.wellknown.SecureBackupMethod
 import javax.inject.Inject
 
 class BootstrapSetupRecoveryKeyFragment @Inject constructor() :
@@ -55,26 +56,40 @@ class BootstrapSetupRecoveryKeyFragment @Inject constructor() :
     }
 
     override fun invalidate() = withState(sharedViewModel) { state ->
-        if (state.step is BootstrapStep.FirstForm) {
-            if (state.step.keyBackUpExist) {
-                // Display the set up action
-                views.bootstrapSetupSecureSubmit.isVisible = true
-                views.bootstrapSetupSecureUseSecurityKey.isVisible = false
-                views.bootstrapSetupSecureUseSecurityPassphrase.isVisible = false
-                views.bootstrapSetupSecureUseSecurityPassphraseSeparator.isVisible = false
+        val firstFormStep = state.step as? BootstrapStep.FirstForm ?: return@withState
+        if (firstFormStep.keyBackUpExist) {
+            // Display the set up action
+            views.bootstrapSetupSecureSubmit.isVisible = true
+            views.bootstrapSetupSecureUseSecurityKey.isVisible = false
+            views.bootstrapSetupSecureUseSecurityPassphrase.isVisible = false
+            views.bootstrapSetupSecureUseSecurityPassphraseSeparator.isVisible = false
+        } else {
+            if (firstFormStep.reset) {
+                views.bootstrapSetupSecureText.text = getString(R.string.reset_secure_backup_title)
+                views.bootstrapSetupWarningTextView.isVisible = true
             } else {
-                if (state.step.reset) {
-                    views.bootstrapSetupSecureText.text = getString(R.string.reset_secure_backup_title)
-                    views.bootstrapSetupWarningTextView.isVisible = true
-                } else {
-                    views.bootstrapSetupSecureText.text = getString(R.string.bottom_sheet_setup_secure_backup_subtitle)
-                    views.bootstrapSetupWarningTextView.isVisible = false
+                views.bootstrapSetupSecureText.text = getString(R.string.bottom_sheet_setup_secure_backup_subtitle)
+                views.bootstrapSetupWarningTextView.isVisible = false
+            }
+            // Choose between create a passphrase or use a recovery key
+
+            views.bootstrapSetupSecureSubmit.isVisible = false
+            when (firstFormStep.methods) {
+                SecureBackupMethod.KEY_OR_PASSPHRASE -> {
+                    views.bootstrapSetupSecureUseSecurityKey.isVisible = true
+                    views.bootstrapSetupSecureUseSecurityPassphrase.isVisible = true
+                    views.bootstrapSetupSecureUseSecurityPassphraseSeparator.isVisible = true
                 }
-                // Choose between create a passphrase or use a recovery key
-                views.bootstrapSetupSecureSubmit.isVisible = false
-                views.bootstrapSetupSecureUseSecurityKey.isVisible = true
-                views.bootstrapSetupSecureUseSecurityPassphrase.isVisible = true
-                views.bootstrapSetupSecureUseSecurityPassphraseSeparator.isVisible = true
+                SecureBackupMethod.KEY               -> {
+                    views.bootstrapSetupSecureUseSecurityKey.isVisible = true
+                    views.bootstrapSetupSecureUseSecurityPassphraseSeparator.isVisible = false
+                    views.bootstrapSetupSecureUseSecurityPassphrase.isVisible = false
+                }
+                SecureBackupMethod.PASSPHRASE        -> {
+                    views.bootstrapSetupSecureUseSecurityKey.isVisible = false
+                    views.bootstrapSetupSecureUseSecurityPassphraseSeparator.isVisible = false
+                    views.bootstrapSetupSecureUseSecurityPassphrase.isVisible = true
+                }
             }
         }
     }
