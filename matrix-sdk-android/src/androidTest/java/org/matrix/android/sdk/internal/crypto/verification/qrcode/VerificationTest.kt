@@ -19,8 +19,8 @@ package org.matrix.android.sdk.internal.crypto.verification.qrcode
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import org.amshove.kluent.shouldBe
 import org.junit.FixMethodOrder
-import org.junit.Test
 import org.junit.Ignore
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
 import org.matrix.android.sdk.InstrumentedTest
