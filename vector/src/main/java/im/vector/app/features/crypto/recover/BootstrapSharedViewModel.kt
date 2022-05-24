@@ -110,7 +110,13 @@ class BootstrapSharedViewModel @AssistedInject constructor(
             SetupMode.PASSPHRASE_AND_NEEDED_SECRETS_RESET,
             SetupMode.HARD_RESET         -> {
                 setState {
-                    copy(step = BootstrapStep.FirstForm(keyBackUpExist = false, reset = session.sharedSecretStorageService().isRecoverySetup(), methods = this.secureBackupMethod))
+                    copy(
+                            step = BootstrapStep.FirstForm(
+                                keyBackUpExist = false,
+                                reset = session.sharedSecretStorageService().isRecoverySetup(),
+                                methods = this.secureBackupMethod
+                            )
+                    )
                 }
             }
             SetupMode.CROSS_SIGNING_ONLY -> {

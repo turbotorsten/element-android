@@ -48,6 +48,7 @@ import org.matrix.android.sdk.api.auth.registration.RegistrationFlowResponse
 import org.matrix.android.sdk.api.auth.registration.nextUncompletedStage
 import org.matrix.android.sdk.api.extensions.tryOrNull
 import org.matrix.android.sdk.api.raw.RawService
+import org.matrix.android.sdk.api.session.crypto.crosssigning.CrossSigningService
 import org.matrix.android.sdk.api.session.crypto.model.CryptoDeviceInfo
 import org.matrix.android.sdk.api.session.crypto.model.MXUsersDevicesMap
 import org.matrix.android.sdk.api.session.getUser
@@ -303,20 +304,13 @@ class HomeActivityViewModel @AssistedInject constructor(
                     // We do not use the viewModel context because we do not want to cancel this action
                     Timber.d("Initialize cross signing")
                     try {
-                        awaitCallback<Unit> {
-                            session.cryptoService().crossSigningService().initializeCrossSigning(
-                                    object : UserInteractiveAuthInterceptor {
-                                        override fun performStage(flowResponse: RegistrationFlowResponse, errCode: String?, promise: Continuation<UIABaseAuth>) {
-                                            promise.resume(
-                                                    UserPasswordAuth(
-                                                            session = flowResponse.session,
-                                                            user = session.myUserId,
-                                                            password = password
-                                                    )
-                                            )
-                                        }
-                                    },
-                                    callback = it
+                        session.cryptoService().crossSigningService().awaitCrossSigninInitialization { response, _ ->
+                            resume(
+                                    UserPasswordAuth(
+                                            session = response.session,
+                                            user = session.myUserId,
+                                            password = password
+                                    )
                             )
                         }
                     } catch (failure: Throwable) {
@@ -377,29 +371,22 @@ class HomeActivityViewModel @AssistedInject constructor(
                         // Try to initialize cross signing in background if possible
                         Timber.d("Initialize cross signing...")
                         try {
-                            awaitCallback<Unit> {
-                                session.cryptoService().crossSigningService().initializeCrossSigning(
-                                        object : UserInteractiveAuthInterceptor {
-                                            override fun performStage(flowResponse: RegistrationFlowResponse, errCode: String?, promise: Continuation<UIABaseAuth>) {
-                                                // We missed server grace period or it's not setup, see if we remember locally password
-                                                if (flowResponse.nextUncompletedStage() == LoginFlowTypes.PASSWORD &&
-                                                        errCode == null &&
-                                                        reAuthHelper.data != null) {
-                                                    promise.resume(
-                                                            UserPasswordAuth(
-                                                                    session = flowResponse.session,
-                                                                    user = session.myUserId,
-                                                                    password = reAuthHelper.data
-                                                            )
-                                                    )
-                                                } else {
-                                                    promise.resumeWithException(Exception("Cannot silently initialize cross signing, UIA missing"))
-                                                }
-                                            }
-                                        },
-                                        callback = it
-                                )
-                                Timber.d("Initialize cross signing SUCCESS")
+                            session.cryptoService().crossSigningService().awaitCrossSigninInitialization { response, errCode ->
+                                // We missed server grace period or it's not setup, see if we remember locally password
+                                if (response.nextUncompletedStage() == LoginFlowTypes.PASSWORD &&
+                                        errCode == null &&
+                                        reAuthHelper.data != null) {
+                                    resume(
+                                            UserPasswordAuth(
+                                                    session = response.session,
+                                                    user = session.myUserId,
+                                                    password = reAuthHelper.data
+                                            )
+                                    )
+                                    Timber.d("Initialize cross signing SUCCESS")
+                                } else {
+                                    resumeWithException(Exception("Cannot silently initialize cross signing, UIA missing"))
+                                }
                             }
                         } catch (failure: Throwable) {
                             Timber.e(failure, "Failed to initialize cross signing")
@@ -419,5 +406,20 @@ class HomeActivityViewModel @AssistedInject constructor(
                 initialize()
             }
         }
+    }
+}
+
+private suspend fun CrossSigningService.awaitCrossSigninInitialization(
+        block: Continuation<UIABaseAuth>.(response: RegistrationFlowResponse, errCode: String?) -> Unit
+) {
+    awaitCallback<Unit> {
+        initializeCrossSigning(
+                object : UserInteractiveAuthInterceptor {
+                    override fun performStage(flowResponse: RegistrationFlowResponse, errCode: String?, promise: Continuation<UIABaseAuth>) {
+                        promise.block(flowResponse, errCode)
+                    }
+                },
+                callback = it
+        )
     }
 }
