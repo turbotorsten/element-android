@@ -215,12 +215,17 @@ class WidgetPostAPIHandler @AssistedInject constructor(@Assisted private val roo
      * @param eventData the modular data
      */
     private fun getWidgets(widgetPostAPIMediator: WidgetPostAPIMediator, eventData: JsonDict) {
-        if (checkRoomId(widgetPostAPIMediator, eventData)) {
-            return
+        val roomIdInEvent = eventData["room_id"] as String?
+        val allWidgets = if (null == roomIdInEvent) {
+            session.widgetService().getUserWidgets()
+        } else {
+            if (checkRoomId(widgetPostAPIMediator, eventData)) {
+                return
+            }
+            session.widgetService().getRoomWidgets(roomId) + session.widgetService().getUserWidgets()
         }
         Timber.d("Received request to get widget in room $roomId")
         val responseData = ArrayList<JsonDict>()
-        val allWidgets = session.widgetService().getRoomWidgets(roomId) + session.widgetService().getUserWidgets()
         for (widget in allWidgets) {
             val map = widget.event.toContent()
             responseData.add(map)
