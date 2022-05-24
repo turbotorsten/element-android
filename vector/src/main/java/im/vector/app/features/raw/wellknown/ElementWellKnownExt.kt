@@ -34,9 +34,9 @@ fun ElementWellKnown.isSecureBackupRequired() = elementE2E?.secureBackupRequired
         ?: riotE2E?.secureBackupRequired
         ?: false
 
-fun ElementWellKnown.secureBackupMethod(): SecureBackupMethod {
-    val methodList = elementE2E?.secureBackupSetupMethods
-            ?: riotE2E?.secureBackupSetupMethods
+fun ElementWellKnown?.secureBackupMethod(): SecureBackupMethod {
+    val methodList = this?.elementE2E?.secureBackupSetupMethods
+            ?: this?.riotE2E?.secureBackupSetupMethods
             ?: listOf("key", "passphrase")
     return if (methodList.contains("key") && methodList.contains("passphrase")) {
         SecureBackupMethod.KEY_OR_PASSPHRASE

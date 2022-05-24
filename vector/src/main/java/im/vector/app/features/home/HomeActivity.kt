@@ -364,7 +364,10 @@ class HomeActivity :
     }
 
     private fun handleStartRecoverySetup() {
-        navigator.open4SSetup(this, SetupMode.NORMAL)
+        // To avoid IllegalStateException in case the transaction was executed after onSaveInstanceState
+        lifecycleScope.launchWhenResumed {
+            navigator.open4SSetup(this@HomeActivity, SetupMode.NORMAL)
+        }
     }
 
     private fun renderState(state: HomeActivityViewState) {
