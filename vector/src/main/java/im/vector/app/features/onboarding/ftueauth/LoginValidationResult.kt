@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 The Matrix.org Foundation C.I.C.
+ * Copyright (c) 2022 New Vector Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,11 @@
  * limitations under the License.
  */
 
-package org.matrix.android.sdk.api.session.room.model.livelocation
+package im.vector.app.features.onboarding.ftueauth
 
-import org.matrix.android.sdk.api.session.room.model.message.MessageBeaconLocationDataContent
-
-/**
- * Aggregation info concerning a live location share.
- */
-data class LiveLocationShareAggregatedSummary(
-        /**
-         * Indicate whether the live is currently running.
-         */
-        val isActive: Boolean?,
-        val endOfLiveTimestampMillis: Long?,
-        val lastLocationDataContent: MessageBeaconLocationDataContent?,
+data class LoginValidationResult(
+        val usernameOrId: String,
+        val password: String,
+        val usernameOrIdError: String?,
+        val passwordError: String?
 )
